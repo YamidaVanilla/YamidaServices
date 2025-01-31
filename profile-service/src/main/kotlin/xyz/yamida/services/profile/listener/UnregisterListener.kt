@@ -1,0 +1,31 @@
+package xyz.yamida.services.profile.listener
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.stereotype.Component
+import xyz.yamida.services.profile.dto.UnregisterRequestDTO
+import xyz.yamida.services.profile.repository.UserRepository
+
+@Component
+class UnregisterListener(
+    val userRepository: UserRepository,
+    val objectMapper: ObjectMapper
+) {
+
+    @KafkaListener(topics = ["unregister_topic"], groupId = "unregister_group")
+    fun handleUnregister(message: String) {
+        try {
+            val unregisterRequest = objectMapper.readValue(message, UnregisterRequestDTO::class.java)
+
+            val existingUser = userRepository.findByDiscordIdOrGameNickname(
+                unregisterRequest.discordId, unregisterRequest.gameNickname
+            )
+
+            if (existingUser != null) {
+                userRepository.delete(existingUser)
+            }
+        } catch (ex: Exception) {
+            println("Failed to unregister ${ex.message}")
+        }
+    }
+}

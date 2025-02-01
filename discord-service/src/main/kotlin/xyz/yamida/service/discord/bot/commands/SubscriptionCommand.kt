@@ -62,10 +62,10 @@ class SubscriptionCommand(
 
         val message = SubscribeRequestDTO(
             discordId = identifier,
-            gameNickname = user.gameNickname ?: "",
+            gameNickname = user.gameNickname,
             days = days
         )
         val messageJson = objectMapper.writeValueAsString(message)
-        kafkaTemplate.send("subscription_topic", messageJson)
+        kafkaTemplate.send("subscribe-events", messageJson)
     }
 }

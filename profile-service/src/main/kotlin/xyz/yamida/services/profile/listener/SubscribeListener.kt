@@ -11,7 +11,7 @@ class SubscribeListener(
     val userRepository: UserRepository,
     val objectMapper: ObjectMapper
 ) {
-    @KafkaListener(topics = ["subscribe_topic"], groupId = "subscribe_group")
+    @KafkaListener(topics = ["subscribe-events"], groupId = "profile")
     fun handleGive(message: String) = try {
         val requestDTO = objectMapper.readValue(message, SubscribeRequestDTO::class.java)
 

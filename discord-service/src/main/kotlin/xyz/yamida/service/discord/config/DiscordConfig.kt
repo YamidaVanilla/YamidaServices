@@ -10,17 +10,17 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.core.KafkaTemplate
 import xyz.yamida.jda.commander.CommandManager
-import xyz.yamida.service.discord.bot.commands.ProfileCommand
-import xyz.yamida.service.discord.bot.commands.SubscriptionCommand
-import xyz.yamida.service.discord.bot.commands.UnregisterCommand
+import xyz.yamida.service.discord.bot.commands.*
 import xyz.yamida.service.discord.bot.handlers.AuthorizationMessageListener
 import xyz.yamida.service.discord.bot.handlers.GuildMemberLeaveListener
-import xyz.yamida.service.discord.controller.punishments.PunishmentService
+import xyz.yamida.service.discord.services.messaging.MessagingService
+import xyz.yamida.service.discord.services.punishments.PunishmentService
 import xyz.yamida.service.discord.repository.UserRepository
 
 @Configuration
 class DiscordConfig(
-    @Value("\${discord.bot.token}") val token: String
+    @Value("\${discord.bot.token}") val token: String,
+    val status: TechMaintenanceConfig
 ) {
 
     @Bean
@@ -40,12 +40,18 @@ class DiscordConfig(
         userRepository: UserRepository,
         punishmentService: PunishmentService,
         kafkaTemplate: KafkaTemplate<String, String>,
-        objectMapper: ObjectMapper
+        objectMapper: ObjectMapper,
+        messageService: MessagingService
     ): CommandManager {
         val commands = listOf(
             ProfileCommand(userRepository),
             UnregisterCommand(userRepository, kafkaTemplate, objectMapper),
             SubscriptionCommand(userRepository, kafkaTemplate, objectMapper),
+            MuteCommand(userRepository, kafkaTemplate, objectMapper, messageService),
+            UnmuteCommand(userRepository, kafkaTemplate, objectMapper),
+            BanCommand(userRepository, kafkaTemplate, objectMapper, messageService),
+            UnbanCommand(userRepository, kafkaTemplate, objectMapper),
+            TechMaintenanceCommand(status)
         )
         val commandManager = CommandManager(commands)
         jda.addEventListener(
@@ -61,10 +67,12 @@ class DiscordConfig(
     @Bean
     fun setPresence(jda: JDA): Boolean {
         println("Setting presence")
-        jda.presence.setPresence(
-            Activity.watching("за сервером"),
-            false
-        )
+        val activity = if (status.isEnabled()) {
+            Activity.playing("🛠 Технические работы")
+        } else {
+            Activity.watching("за сервером")
+        }
+        jda.presence.setPresence(activity, false)
         return true
     }
 }

@@ -52,7 +52,7 @@ class UnregisterCommand(
         )
 
         val kafkaMessage = objectMapper.writeValueAsString(unregisterRequestDTO)
-        kafkaTemplate.send("unregister_topic", kafkaMessage)
+        kafkaTemplate.send("unregister-events", kafkaMessage)
 
         val embed = EmbedBuilder()
             .setTitle("Пользователь успешно удалён")

@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://89.39.121.106:5432/moderation_service
+    username: а вот хуй тебе
+    password: нельзя
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: moderation_service_group
+      auto-offset-reset: earliest
+
+server:
+  port: 8080

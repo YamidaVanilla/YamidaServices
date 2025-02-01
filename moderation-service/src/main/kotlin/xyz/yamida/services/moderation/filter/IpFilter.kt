@@ -1,4 +1,4 @@
-package xyz.yamida.services.profile.filter
+package xyz.yamida.services.moderation.filter
 
 import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain

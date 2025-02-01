@@ -15,7 +15,7 @@ class IpFilter : Filter {
 
     private val allowedIps = setOf(
         "87.120.186.145",
-        "85.254.74.53",
+        "85.254.73.33",
         "127.0.0.1"
     )
 

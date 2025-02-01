@@ -96,7 +96,7 @@ class AuthorizationMessageListener(
 
         try {
             userRepository.save(user)
-            kafkaTemplate.send("register_topic", objectMapper.writeValueAsString(registrationDTO))
+            kafkaTemplate.send("register-events", objectMapper.writeValueAsString(registrationDTO))
             event.reply("Личное сообщение с информацией о регистрации отправлено.").setEphemeral(true).queue()
         } catch (e: Exception) {
             event.reply("Ошибка: Не удалось зарегистрировать пользователя. ${e.message}").setEphemeral(true).queue()

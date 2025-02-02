@@ -40,23 +40,22 @@ class UnregisterCommand(
         val user = userRepository.findByDiscordIdOrGameNickname(identifier)
 
         if (user == null) {
-            event.reply("Пользователь с ником `$identifier` не найден. Убедитесь, что ник указан верно.").setEphemeral(true).queue()
+            event.reply("Пользователь с идентификатором`$identifier` не найден. Убедитесь, что он указан верно.").setEphemeral(true).queue()
             return
         }
 
         userRepository.delete(user)
 
-        val unregisterRequestDTO = UnregisterRequestDTO(
+        val request = UnregisterRequestDTO(
             user.discordId,
             user.gameNickname
         )
 
-        val kafkaMessage = objectMapper.writeValueAsString(unregisterRequestDTO)
-        kafkaTemplate.send("unregister-events", kafkaMessage)
+        kafkaTemplate.send("unregister-events", request.toTransfer(objectMapper))
 
         val embed = EmbedBuilder()
             .setTitle("Пользователь успешно удалён")
-            .setDescription("Профиль с ником `$identifier` был успешно удалён из базы данных и сообщение отправлено в Kafka.")
+            .setDescription("Профиль с ником `${user.gameNickname} (${user.discordId})` был успешно удалён из базы данных.")
             .setColor(0xFF5555)
             .build()
 

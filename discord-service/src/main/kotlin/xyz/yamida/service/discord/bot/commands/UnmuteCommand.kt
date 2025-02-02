@@ -44,9 +44,8 @@ class UnmuteCommand(
         val request = UnMuteRequestDTO(
             gameName = user.gameNickname
         )
-        val messageJson = objectMapper.writeValueAsString(request)
-        kafkaTemplate.send("unmute-events", messageJson)
+        kafkaTemplate.send("unmute-events", request.toTransfer(objectMapper))
 
-        event.reply("Пользователь `$identifier` размучен.").queue()
+        event.reply("Пользователь `${user.gameNickname} (${user.discordId})` размучен.").queue()
     }
 }

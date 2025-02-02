@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import xyz.yamida.services.profile.dto.SubscribeRequestDTO
+import xyz.yamida.services.profile.dto.api.DataTransferObject
 import xyz.yamida.services.profile.repository.UserRepository
 
 @Component
@@ -11,9 +12,9 @@ class SubscribeListener(
     val userRepository: UserRepository,
     val objectMapper: ObjectMapper
 ) {
-    @KafkaListener(topics = ["subscribe-events"], groupId = "profile")
+    @KafkaListener(topics = ["subscribe-events"], groupId = "subscribe-profile-group")
     fun handleGive(message: String) = try {
-        val requestDTO = objectMapper.readValue(message, SubscribeRequestDTO::class.java)
+        val requestDTO = DataTransferObject.fromTransfer<SubscribeRequestDTO>(objectMapper, message)
 
         val user = userRepository.findByDiscordIdOrGameNickname(requestDTO.discordId, requestDTO.gameNickname)
             ?: throw Exception("Пользователь с ID '${requestDTO.discordId}' или ником '${requestDTO.gameNickname}' не найден.")

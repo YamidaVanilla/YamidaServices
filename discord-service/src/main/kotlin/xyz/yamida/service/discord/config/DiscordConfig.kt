@@ -13,14 +13,13 @@ import xyz.yamida.jda.commander.CommandManager
 import xyz.yamida.service.discord.bot.commands.*
 import xyz.yamida.service.discord.bot.handlers.AuthorizationMessageListener
 import xyz.yamida.service.discord.bot.handlers.GuildMemberLeaveListener
+import xyz.yamida.service.discord.repository.UserRepository
 import xyz.yamida.service.discord.services.messaging.MessagingService
 import xyz.yamida.service.discord.services.punishments.PunishmentService
-import xyz.yamida.service.discord.repository.UserRepository
 
 @Configuration
 class DiscordConfig(
-    @Value("\${discord.bot.token}") val token: String,
-    val status: TechMaintenanceConfig
+    @Value("\${discord.bot.token}") val token: String
 ) {
 
     @Bean
@@ -50,8 +49,7 @@ class DiscordConfig(
             MuteCommand(userRepository, kafkaTemplate, objectMapper, messageService),
             UnmuteCommand(userRepository, kafkaTemplate, objectMapper),
             BanCommand(userRepository, kafkaTemplate, objectMapper, messageService),
-            UnbanCommand(userRepository, kafkaTemplate, objectMapper),
-            TechMaintenanceCommand(status)
+            UnbanCommand(userRepository, kafkaTemplate, objectMapper)
         )
         val commandManager = CommandManager(commands)
         jda.addEventListener(
@@ -67,11 +65,7 @@ class DiscordConfig(
     @Bean
     fun setPresence(jda: JDA): Boolean {
         println("Setting presence")
-        val activity = if (status.isEnabled()) {
-            Activity.playing("🛠 Технические работы")
-        } else {
-            Activity.watching("за сервером")
-        }
+        val activity = Activity.watching("за сервером")
         jda.presence.setPresence(activity, false)
         return true
     }

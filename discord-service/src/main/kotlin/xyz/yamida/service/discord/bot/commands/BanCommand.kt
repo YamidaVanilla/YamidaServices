@@ -8,9 +8,9 @@ import org.springframework.kafka.core.KafkaTemplate
 import xyz.yamida.jda.commander.SlashCommand
 import xyz.yamida.jda.commander.api.option.BaseCommandOptions
 import xyz.yamida.jda.commander.api.option.ext.stringParam
-import xyz.yamida.service.discord.services.messaging.MessagingService
 import xyz.yamida.service.discord.dto.BanRequestDTO
 import xyz.yamida.service.discord.repository.UserRepository
+import xyz.yamida.service.discord.services.messaging.MessagingService
 
 class BanCommand(
     val userRepository: UserRepository,
@@ -63,8 +63,7 @@ class BanCommand(
             user.discordId,
             embed = embed,
         )
-        val messageJson = objectMapper.writeValueAsString(request)
-        kafkaTemplate.send("ban-events", messageJson)
-        event.reply("Пользователь `$identifier` забанен с причиной `$reason`").queue()
+        kafkaTemplate.send("ban-events", request.toTransfer(objectMapper))
+        event.reply("Пользователь `${user.gameNickname} (${user.discordId})` забанен с причиной `$reason`").queue()
     }
 }

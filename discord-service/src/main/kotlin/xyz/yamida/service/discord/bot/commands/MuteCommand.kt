@@ -9,9 +9,9 @@ import xyz.yamida.jda.commander.SlashCommand
 import xyz.yamida.jda.commander.api.option.BaseCommandOptions
 import xyz.yamida.jda.commander.api.option.ext.intParam
 import xyz.yamida.jda.commander.api.option.ext.stringParam
-import xyz.yamida.service.discord.services.messaging.MessagingService
 import xyz.yamida.service.discord.dto.MuteRequestDTO
 import xyz.yamida.service.discord.repository.UserRepository
+import xyz.yamida.service.discord.services.messaging.MessagingService
 
 class MuteCommand(
     val userRepository: UserRepository,
@@ -65,9 +65,8 @@ class MuteCommand(
             user.discordId,
             embed = embed,
         )
-        val messageJson = objectMapper.writeValueAsString(request)
-        kafkaTemplate.send("mute-events", messageJson)
+        kafkaTemplate.send("mute-events", request.toTransfer(objectMapper))
 
-        event.reply("Пользователь `$identifier` замучен на $duration секунд.").queue()
+        event.reply("Пользователь `${user.gameNickname} (${user.discordId})` замучен на $duration секунд.").queue()
     }
 }

@@ -44,9 +44,8 @@ class UnbanCommand(
         val request = UnBanRequestDTO(
             gameName = user.gameNickname
         )
-        val messageJson = objectMapper.writeValueAsString(request)
-        kafkaTemplate.send("unban-events", messageJson)
+        kafkaTemplate.send("unban-events", request.toTransfer(objectMapper))
 
-        event.reply("Пользователь `$identifier` разбанен.").queue()
+        event.reply("Пользователь `${user.gameNickname} (${user.discordId})` разбанен.").queue()
     }
 }

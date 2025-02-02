@@ -50,12 +50,12 @@ class SubscriptionCommand(
 
         if (days > 0) {
             user.subscribeDays += days
-            event.reply("Пользователю `$identifier` добавлено $days дней подписки.").queue()
+            event.reply("Пользователю `${user.gameNickname} (${user.gameNickname}` добавлено $days дней подписки.").queue()
         } else {
             val updatedDays = (user.subscribeDays + days).coerceAtLeast(0)
             val removedDays = user.subscribeDays - updatedDays
             user.subscribeDays = updatedDays
-            event.reply("У пользователя `$identifier` снято $removedDays дней подписки. Текущее количество дней: $updatedDays.").queue()
+            event.reply("У пользователя `${user.gameNickname} (${user.discordId})` снято $removedDays дней подписки. Текущее количество дней: $updatedDays.").queue()
         }
 
         userRepository.save(user)
@@ -65,7 +65,6 @@ class SubscriptionCommand(
             gameNickname = user.gameNickname,
             days = days
         )
-        val messageJson = objectMapper.writeValueAsString(message)
-        kafkaTemplate.send("subscribe-events", messageJson)
+        kafkaTemplate.send("subscribe-events", message.toTransfer(objectMapper))
     }
 }

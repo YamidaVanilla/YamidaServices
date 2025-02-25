@@ -5,4 +5,6 @@ import xyz.yamida.services.moderation.dto.api.DataTransferObject
 data class MuteRequestDTO(
     val gameName: String,
     val duration: Long? = null
-) : DataTransferObject()
+) : DataTransferObject() {
+    override val topic: String = "mute-events"
+}

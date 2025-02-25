@@ -9,11 +9,14 @@ import xyz.yamida.jda.commander.SlashCommand
 import xyz.yamida.jda.commander.api.option.BaseCommandOptions
 import xyz.yamida.jda.commander.api.option.ext.stringParam
 import xyz.yamida.service.discord.dto.BanRequestDTO
+import xyz.yamida.service.discord.entity.Punishment
+import xyz.yamida.service.discord.repository.PunishmentRepository
 import xyz.yamida.service.discord.repository.UserRepository
 import xyz.yamida.service.discord.services.messaging.MessagingService
 
 class BanCommand(
     val userRepository: UserRepository,
+    val punishmentRepository: PunishmentRepository,
     val kafkaTemplate: KafkaTemplate<String, String>,
     val objectMapper: ObjectMapper,
     val messageService: MessagingService
@@ -50,10 +53,13 @@ class BanCommand(
             return
         }
 
+        println("User: $user")
+
         val request = BanRequestDTO(
             gameName = user.gameNickname,
             reason = reason
         )
+
         val embed = EmbedBuilder()
             .setTitle("Вы получили наказание")
             .setDescription("Вы получили бан на игровом сервере за `$reason`")
@@ -63,7 +69,14 @@ class BanCommand(
             user.discordId,
             embed = embed,
         )
-        kafkaTemplate.send("ban-events", request.toTransfer(objectMapper))
+        println("Request: $request")
+        kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
+        punishmentRepository.save(Punishment(
+            discordId = user.discordId,
+            type = "ban",
+            reason = reason
+        ))
+        println("Punishment: $user")
         event.reply("Пользователь `${user.gameNickname} (${user.discordId})` забанен с причиной `$reason`").queue()
     }
 }

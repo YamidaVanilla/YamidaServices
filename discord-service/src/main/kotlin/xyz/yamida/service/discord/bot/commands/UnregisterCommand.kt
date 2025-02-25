@@ -51,7 +51,7 @@ class UnregisterCommand(
             user.gameNickname
         )
 
-        kafkaTemplate.send("unregister-events", request.toTransfer(objectMapper))
+        kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
 
         val embed = EmbedBuilder()
             .setTitle("Пользователь успешно удалён")

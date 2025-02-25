@@ -6,4 +6,6 @@ import xyz.yamida.services.moderation.entity.User
 interface UserRepository : JpaRepository<User, Long> {
     fun findByDiscordId(discordId: String): User?
     fun findByGameNickname(gameNickname: String): User?
+
+    fun findByGameNicknameOrDiscordId(gameNickname: String?, discordId: String?): User?
 }

@@ -18,14 +18,8 @@ class UnregisterListener(
             val unregisterRequest = DataTransferObject.fromTransfer<UnregisterRequestDTO>(objectMapper, message)
 
             val existingUser = userRepository.findByDiscordIdOrGameNickname(
-                unregisterRequest.discordId, unregisterRequest.gameNickname
+                unregisterRequest.discordId, unregisterRequest.gameNickname ?: ""
             )
-
-            println("""
-                Пришел запрос на анрегестрацию:
-                ${unregisterRequest.gameNickname}
-                ${unregisterRequest.discordId}
-            """.trimIndent())
 
             if (existingUser != null) {
                 userRepository.delete(existingUser)

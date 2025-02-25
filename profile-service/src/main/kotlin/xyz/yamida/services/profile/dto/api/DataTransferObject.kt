@@ -3,6 +3,8 @@ package xyz.yamida.services.profile.dto.api
 import com.fasterxml.jackson.databind.ObjectMapper
 
 abstract class DataTransferObject {
+    abstract val topic: String
+
     fun toTransfer(objectMapper: ObjectMapper): String {
         return objectMapper.writeValueAsString(this)
     }

@@ -50,7 +50,7 @@ class SubscriptionCommand(
 
         if (days > 0) {
             user.subscribeDays += days
-            event.reply("Пользователю `${user.gameNickname} (${user.gameNickname}` добавлено $days дней подписки.").queue()
+            event.reply("Пользователю `${user.gameNickname} (${user.gameNickname})` добавлено $days дней подписки.").queue()
         } else {
             val updatedDays = (user.subscribeDays + days).coerceAtLeast(0)
             val removedDays = user.subscribeDays - updatedDays
@@ -60,11 +60,11 @@ class SubscriptionCommand(
 
         userRepository.save(user)
 
-        val message = SubscribeRequestDTO(
+        val request = SubscribeRequestDTO(
             discordId = identifier,
             gameNickname = user.gameNickname,
             days = days
         )
-        kafkaTemplate.send("subscribe-events", message.toTransfer(objectMapper))
+        kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
     }
 }

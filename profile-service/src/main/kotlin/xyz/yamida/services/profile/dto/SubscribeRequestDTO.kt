@@ -6,4 +6,6 @@ data class SubscribeRequestDTO(
     val discordId: String,
     val gameNickname: String,
     val days: Int
-) : DataTransferObject()
+) : DataTransferObject() {
+    override val topic: String = "subscribe-events"
+}

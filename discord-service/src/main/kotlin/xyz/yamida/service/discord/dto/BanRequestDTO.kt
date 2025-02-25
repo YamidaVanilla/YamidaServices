@@ -3,6 +3,9 @@ package xyz.yamida.service.discord.dto
 import xyz.yamida.service.discord.dto.api.DataTransferObject
 
 data class BanRequestDTO(
-    val gameName: String,
+    val gameName: String? = null,
+    val discordId: String? = null,
     val reason: String
-) : DataTransferObject()
+) : DataTransferObject() {
+    override val topic: String = "ban-events"
+}

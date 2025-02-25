@@ -22,12 +22,6 @@ class RegisterListener(
             if (existingUser != null) {
                 return
             }
-
-            println("""
-                Пришел запрос на регистрацию
-                ${registrationDTO.gameNickname}
-                ${registrationDTO.discordId}
-            """.trimIndent())
             val user = User(
                 discordId = registrationDTO.discordId,
                 gameNickname = registrationDTO.gameNickname

@@ -13,6 +13,7 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findByGameNickname(gameNickname: String): User?
 
     fun findByGameNicknameAndDiscordId(gameNickname: String, discordId: String): User?
+
     @Query("SELECT u FROM User u WHERE u.discordId = :identifier OR u.gameNickname = :identifier")
     fun findByDiscordIdOrGameNickname(@Param("identifier") identifier: String): User?
 }

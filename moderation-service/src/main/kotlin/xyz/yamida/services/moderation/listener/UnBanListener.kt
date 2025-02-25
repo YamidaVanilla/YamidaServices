@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 import xyz.yamida.services.moderation.dto.BanRequestDTO
+import xyz.yamida.services.moderation.dto.UnBanRequestDTO
 import xyz.yamida.services.moderation.dto.api.DataTransferObject
 import xyz.yamida.services.moderation.repository.UserRepository
 
@@ -15,7 +16,7 @@ class UnBanListener(
     @KafkaListener(topics = ["unban-events"], groupId = "unban-moderation-group")
     fun handleRegistration(message: String) {
         try {
-            val unbanDto = DataTransferObject.fromTransfer<BanRequestDTO>(objectMapper, message)
+            val unbanDto = DataTransferObject.fromTransfer<UnBanRequestDTO>(objectMapper, message)
 
             val user = userRepository.findByGameNickname(unbanDto.gameName) ?: return
 

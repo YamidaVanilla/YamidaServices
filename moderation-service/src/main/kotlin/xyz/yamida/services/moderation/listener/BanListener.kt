@@ -17,10 +17,11 @@ class BanListener(
         try {
             val banDto = DataTransferObject.fromTransfer<BanRequestDTO>(objectMapper, message)
 
-            val user = userRepository.findByGameNickname(banDto.gameName) ?: return
-
-            user.isBanned = true
-            user.banReason = banDto.reason
+            val user = userRepository.findByGameNicknameOrDiscordId(banDto.gameName, banDto.discordId) ?: return
+            user.apply {
+                isBanned = true
+                banReason = banDto.reason
+            }
             userRepository.save(user)
         } catch (ex: Exception) {
             println(ex.message)

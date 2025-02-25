@@ -8,10 +8,12 @@ import xyz.yamida.jda.commander.SlashCommand
 import xyz.yamida.jda.commander.api.option.BaseCommandOptions
 import xyz.yamida.jda.commander.api.option.ext.stringParam
 import xyz.yamida.service.discord.dto.UnBanRequestDTO
+import xyz.yamida.service.discord.repository.PunishmentRepository
 import xyz.yamida.service.discord.repository.UserRepository
 
 class UnbanCommand(
     val userRepository: UserRepository,
+    val punishmentRepository: PunishmentRepository,
     val kafkaTemplate: KafkaTemplate<String, String>,
     val objectMapper: ObjectMapper
 ) : SlashCommand() {
@@ -37,15 +39,25 @@ class UnbanCommand(
         val identifier = options.identifier.get(event)!!
 
         val user = userRepository.findByDiscordIdOrGameNickname(identifier) ?: run {
-            event.reply("Пользователя с идентификатором `$identifier` не найдено!")
+            event.reply("Пользователя с идентификатором `$identifier` не найдено!").queue()
+            return
+        }
+
+        val punishments = punishmentRepository.findByDiscordId(user.discordId)?.filter { it.type == "ban" }
+        if (punishments.isNullOrEmpty()) {
+            event.reply("У пользователя `${user.gameNickname} (${user.discordId})` нет активных банов.").queue()
             return
         }
 
         val request = UnBanRequestDTO(
             gameName = user.gameNickname
         )
-        kafkaTemplate.send("unban-events", request.toTransfer(objectMapper))
 
+        kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
         event.reply("Пользователь `${user.gameNickname} (${user.discordId})` разбанен.").queue()
+        punishmentRepository.deleteAll(punishments)
+        punishmentRepository.findByDiscordId(user.discordId)?.forEach {
+            println(it)
+        }
     }
 }

@@ -65,7 +65,7 @@ class MuteCommand(
             user.discordId,
             embed = embed,
         )
-        kafkaTemplate.send("mute-events", request.toTransfer(objectMapper))
+        kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
 
         event.reply("Пользователь `${user.gameNickname} (${user.discordId})` замучен на $duration секунд.").queue()
     }

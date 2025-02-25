@@ -83,6 +83,7 @@ class VerificationHandler(
                         .setColor(0xF695CB)
                         .build()).queue()
                 event.reply("Пользователь <@$userId> принят на сервер.").queue()
+                RequestStorage.removeRequest(userId)
                 log.info("Пользователь $userId принят на сервер модератором ${event.user.id}")
 
             }

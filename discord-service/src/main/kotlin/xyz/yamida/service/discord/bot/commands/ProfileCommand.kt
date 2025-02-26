@@ -30,8 +30,12 @@ class ProfileCommand(
 
     override fun execute(event: SlashCommandInteractionEvent) {
         val identifier = options.identifier.get(event)?.let { extractIdFromMention(it) }
-        val player = identifier?.let { userRepository.findByDiscordIdOrGameNickname(it) }
-            ?: userRepository.findByDiscordIdOrGameNickname(event.user.id)
+        val player = if (identifier != null) {
+            userRepository.findByDiscordIdOrGameNickname(identifier)
+        } else {
+            userRepository.findByDiscordIdOrGameNickname(event.user.id)
+        }
+
 
         if (player == null) {
             event.reply("Профиль игрока не найден. Убедитесь, что вы ввели корректный идентификатор.").queue()
@@ -63,7 +67,7 @@ class ProfileCommand(
 
                 **Количество предупреждений**: `${player.warnCount}`
 
-                **Забанен**: ${if (ban == null) ":white_check_mark:" else ":x:"}
+                **Забанен**: `${if (ban == null) ":white_check_mark:" else ":x:"}`
                 **Причина**: `${ban?.reason ?: "Отсутствует"}`
                 """.trimIndent()
             )

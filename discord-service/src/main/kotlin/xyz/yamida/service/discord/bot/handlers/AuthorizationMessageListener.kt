@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.events.session.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.text.TextInput
@@ -32,9 +31,6 @@ class AuthorizationMessageListener(
         if (event.componentId != "authmenu_button") return
 
         val punishments = punishmentRepository.findByDiscordId(event.user.id) ?: emptyList()
-        punishments.forEach {
-            println(it)
-        }
         if (punishments.any { it.type == "ban" }) {
             event.replyEmbeds(createBanEmbed(punishments.first { it.type == "ban" }.reason)).setEphemeral(true).queue()
             return
@@ -58,22 +54,24 @@ class AuthorizationMessageListener(
 
         val nickname = event.getValue("nickname")?.asString ?: "Не указано"
         val daysSinceRegistration = ChronoUnit.DAYS.between(event.user.timeCreated, OffsetDateTime.now())
+        val inviter = event.guild?.retrieveInvites()?.complete()?.find { it.inviter?.id == event.user.id }?.inviter
 
         if (daysSinceRegistration < 5) {
-            sendVerificationRequest(event, nickname)
+            sendVerificationRequest(event, nickname, inviter?.asTag ?: "Неизвестно")
             RequestStorage.addRequest(event.user.id, nickname)
             event.reply("Ваша заявка отправлена на проверку. Ожидайте решения администрации.").setEphemeral(true).queue()
         } else {
+            sendApprovedRequest(event, nickname, inviter?.asTag ?: "Неизвестно")
             handleUserRegistration(event, nickname)
         }
     }
 
-    fun sendVerificationRequest(event: ModalInteractionEvent, nickname: String) {
+    fun sendVerificationRequest(event: ModalInteractionEvent, nickname: String, inviter: String) {
         val verificationChannel = event.jda.getTextChannelById("1294968774319145000") ?: return
 
         val embed = EmbedBuilder()
             .setTitle("Новая заявка на регистрацию")
-            .setDescription("Пользователь: ${event.user.asMention}\nДискорд ID: `${event.user.id}`\nИгровой ник: `$nickname` \nДата регистрации: ${event.user.timeCreated}")
+            .setDescription("Пользователь: ${event.user.asMention}\nДискорд ID: `${event.user.id}`\nИгровой ник: `$nickname`\nДата регистрации: ${event.user.timeCreated}\nПригласил: `$inviter`")
             .setColor(0xFFA500)
             .setFooter("Зарегистрирован менее 5 дней назад")
             .build()
@@ -84,6 +82,19 @@ class AuthorizationMessageListener(
                 Button.success("accept_user:${event.user.id}", "✅ Принять заявку"),
                 Button.secondary("reject_user:${event.user.id}", "❌ Отклонить")
             ).queue()
+    }
+
+    fun sendApprovedRequest(event: ModalInteractionEvent, nickname: String, inviter: String) {
+        val verificationChannel = event.jda.getTextChannelById("1294968774319145000") ?: return
+
+        val embed = EmbedBuilder()
+            .setTitle("Заявка одобрена автоматически")
+            .setDescription("Пользователь: ${event.user.asMention}\nДискорд ID: `${event.user.id}`\nИгровой ник: `$nickname`\nДата регистрации: ${event.user.timeCreated}\nПригласил: `$inviter`")
+            .setColor(0x00FF00)
+            .setFooter("Зарегистрирован более 5 дней назад")
+            .build()
+
+        verificationChannel.sendMessageEmbeds(embed).queue()
     }
 
     fun handleUserRegistration(event: ModalInteractionEvent, nickname: String) {
@@ -104,23 +115,13 @@ class AuthorizationMessageListener(
         }
     }
 
-    override fun onReady(event: ReadyEvent) {
-        event.jda.getTextChannelById(1327400152545099849)?.sendMessageEmbeds(
-            EmbedBuilder()
-                .setTitle("Как попасть на сервер:")
-                .setDescription(
-                    """
-                Чтобы начать играть на сервере, нажмите на кнопку ниже и введите ваш игровой ник в Minecraft.
-                После этого ваш Discord аккаунт будет привязан, и вы сможете играть на сервере.
-
-                **Важно!**
-                Вы больше не сможете самостоятельно отвязать этот **Discord** аккаунт от **Minecraft** аккаунта. В случае ошибки обратитесь к модерации сервера.
-                """.trimIndent()
-                )
-                .setColor(0xF695CB)
+    fun createRegistrationModal() = Modal.create("auth_modal", "Регистрация")
+        .addActionRow(
+            TextInput.create("nickname", "Ваш никнейм", TextInputStyle.SHORT)
+                .setPlaceholder("Введите никнейм")
+                .setRequired(true)
                 .build()
-        )?.setActionRow(Button.primary("authmenu_button", "✍️ Открыть меню"))?.queue()
-    }
+        ).build()
 
     fun createBanEmbed(reason: String) = EmbedBuilder()
         .setTitle("Аккаунт заблокирован")
@@ -134,11 +135,4 @@ class AuthorizationMessageListener(
         .setColor(0xF695CB)
         .build()
 
-    fun createRegistrationModal() = Modal.create("auth_modal", "Регистрация")
-        .addActionRow(
-            TextInput.create("nickname", "Ваш никнейм", TextInputStyle.SHORT)
-                .setPlaceholder("Введите никнейм")
-                .setRequired(true)
-                .build()
-        ).build()
 }

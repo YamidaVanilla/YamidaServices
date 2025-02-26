@@ -12,8 +12,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class ProfileCommand(
-    private val userRepository: UserRepository,
-    private val punishmentRepository: PunishmentRepository
+    val userRepository: UserRepository,
+    val punishmentRepository: PunishmentRepository
 ) : SlashCommand() {
     override val name: String = "profile"
     override val description: String = "Отображает информацию профиля игрока."

@@ -47,7 +47,7 @@ class MuteCommand(
         val duration = options.duration.get(event)!!
 
         val user = userRepository.findByDiscordIdOrGameNickname(identifier) ?: run {
-            event.reply("Пользователя с идентификатором `$identifier` не найдено!")
+            event.reply("Пользователя с идентификатором `$identifier` не найдено!").queue()
             return
         }
 

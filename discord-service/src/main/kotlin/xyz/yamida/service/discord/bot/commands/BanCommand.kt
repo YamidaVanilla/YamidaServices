@@ -48,12 +48,13 @@ class BanCommand(
         val identifier = options.identifier.get(event)!!
         val reason = options.reason.get(event)!!
 
-        val user = userRepository.findByDiscordIdOrGameNickname(identifier) ?: run {
+        val user = userRepository.findByDiscordIdOrGameNickname(identifier)
+        if (user == null) {
             event.reply("Пользователя с идентификатором `$identifier` не найдено!")
+                .setEphemeral(true)
+                .queue()
             return
         }
-
-        println("User: $user")
 
         val request = BanRequestDTO(
             gameName = user.gameNickname,
@@ -69,14 +70,12 @@ class BanCommand(
             user.discordId,
             embed = embed,
         )
-        println("Request: $request")
         kafkaTemplate.send(request.topic, request.toTransfer(objectMapper))
         punishmentRepository.save(Punishment(
             discordId = user.discordId,
             type = "ban",
             reason = reason
         ))
-        println("Punishment: $user")
         event.reply("Пользователь `${user.gameNickname} (${user.discordId})` забанен с причиной `$reason`").queue()
     }
 }

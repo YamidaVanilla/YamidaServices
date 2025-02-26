@@ -37,7 +37,7 @@ class UnmuteCommand(
         val identifier = options.identifier.get(event)!!
 
         val user = userRepository.findByDiscordIdOrGameNickname(identifier) ?: run {
-            event.reply("Пользователя с идентификатором `$identifier` не найдено!")
+            event.reply("Пользователя с идентификатором `$identifier` не найдено!").queue()
             return
         }
 

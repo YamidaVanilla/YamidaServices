@@ -44,7 +44,7 @@ class DiscordConfig(
         messageService: MessagingService
     ): CommandManager {
         val commands = listOf(
-            ProfileCommand(userRepository),
+            ProfileCommand(userRepository, punishmentRepository),
             UnregisterCommand(userRepository, kafkaTemplate, objectMapper),
             SubscriptionCommand(userRepository, kafkaTemplate, objectMapper),
             MuteCommand(userRepository, kafkaTemplate, objectMapper, messageService),

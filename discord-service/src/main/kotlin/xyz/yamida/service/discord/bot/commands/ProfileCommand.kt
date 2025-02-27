@@ -66,8 +66,7 @@ class ProfileCommand(
                 $subscriptionText
 
                 **Количество предупреждений**: `${player.warnCount}`
-
-                **Забанен**: ${if (ban == null) ":white_check_mark:" else ":x:"}
+                **Забанен**: ${if (ban != null) ":white_check_mark:" else ":x:"}
                 **Причина**: `${ban?.reason ?: "Отсутствует"}`
                 """.trimIndent()
             )
